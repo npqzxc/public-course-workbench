@@ -9,14 +9,17 @@ fi
 
 mkdir -p /app/data
 
-export DATABASE_URL="${DATABASE_URL:-postgresql+psycopg://coursestudio:coursestudio@127.0.0.1:5432/coursestudio}"
+export DATABASE_URL="${DATABASE_URL:-sqlite:////app/data/coursestudio.sqlite3}"
 export VENDOR_HUB_HOST="${VENDOR_HUB_HOST:-0.0.0.0}"
 export VENDOR_HUB_PORT="${VENDOR_HUB_PORT:-8000}"
 
-service postgresql start >/dev/null 2>&1 || pg_ctlcluster 15 main start >/dev/null 2>&1 || true
-
-su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='coursestudio'\" | grep -q 1 || psql -c \"CREATE ROLE coursestudio LOGIN PASSWORD 'coursestudio';\""
-su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='coursestudio'\" | grep -q 1 || psql -c \"CREATE DATABASE coursestudio OWNER coursestudio;\""
+case "$DATABASE_URL" in
+    postgresql+psycopg://*)
+        service postgresql start >/dev/null 2>&1 || pg_ctlcluster 15 main start >/dev/null 2>&1 || true
+        su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='coursestudio'\" | grep -q 1 || psql -c \"CREATE ROLE coursestudio LOGIN PASSWORD 'coursestudio';\""
+        su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='coursestudio'\" | grep -q 1 || psql -c \"CREATE DATABASE coursestudio OWNER coursestudio;\""
+        ;;
+esac
 
 python3 - <<'PY'
 from app.config import build_settings

@@ -11,7 +11,7 @@ class Settings:
     secret_key: str = os.getenv("VENDOR_HUB_SECRET_KEY", "course-studio-dev-secret")
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "postgresql+psycopg://coursestudio:coursestudio@127.0.0.1:5432/coursestudio",
+        "sqlite:////app/data/coursestudio.sqlite3",
     )
     seed_data: bool = os.getenv("VENDOR_HUB_SEED_DATA", "1") != "0"
     testing: bool = False
